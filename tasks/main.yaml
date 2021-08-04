@@ -1,0 +1,41 @@
+---
+- name: "Check we only have 1 active and 1 passive host"
+  ansible.builtin.assert:
+    that:
+      - "groups['active']|length == 1"
+      - "groups['passive']|length == 1"
+
+- name: "Enable EPEL"
+  ansible.builtin.package:
+    name: https://dl.fedoraproject.org/pub/epel/epel-release-latest-8.noarch.rpm
+    state: installed
+
+- name: "Install uperf"
+  ansible.builtin.package:
+    name: uperf
+    state: installed
+
+- name: "Disable EPEL"
+  ansible.builtin.package:
+    name: epel-release
+    state: absent
+
+- name: "Start passive uperf"
+  shell: |
+    uperf -s &
+    echo $! >/root/uperf_passive.pid
+  when: "'passive' in group_names"
+
+- name: "Start active uperf"
+  shell: |
+    export proto=tcp
+    export h={{ groups['active']|first }}
+    export nthr=4
+    uperf -m /usr/share/uperf/iperf.xml
+  when: "'active' in group_names"
+
+- name: "Stop passive uperf"
+  shell: |
+    kill $( cat /root/uperf_passive.pid )
+  when: "'passive' in group_names"
+...

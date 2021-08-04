@@ -1,0 +1,10 @@
+- name: "Install and run uperf benchmark"
+  hosts: active,passive
+  remote_user: root
+  gather_facts: off
+  tasks:
+    - name: "Install and run uperf benchmark"
+      include_role:
+        name: uperf_benchmark
+      vars:
+        uperf_benchmark_XYZ: ABC

@@ -8,7 +8,10 @@ uperf_benchmark_host_passive: passive.example.com
 
 # Profile
 uperf_benchmark_profile: /usr/share/uperf/iperf.xml
-uperf_benchmark_param_proto: tcp
-uperf_benchmark_param_nthr: 1
-uperf_benchmark_param_iter: N/A
+
+# Profile params
+uperf_benchmark_param:
+  proto: tcp
+  nthr: 1
+  iter: N/A
 ...

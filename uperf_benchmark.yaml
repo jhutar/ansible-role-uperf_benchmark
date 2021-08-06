@@ -3,9 +3,23 @@
   remote_user: root
   gather_facts: off
   tasks:
-    - name: "Install and run uperf benchmark"
+    - name: "Install uperf benchmark"
+      include_role:
+        name: uperf_benchmark
+        tasks_from: setup_install.yaml
+
+    - name: "Disable firewall for uperf benchmark"
+      include_role:
+        name: uperf_benchmark
+        tasks_from: setup_stop_firewall.yaml
+
+    - name: "Run uperf benchmark"
       include_role:
         name: uperf_benchmark
       vars:
-        uperf_benchmark_host_active: foo.exampl.com
-        uperf_benchmark_host_passive: bar.exampl.com
+        uperf_benchmark_host_active: foo.example.com
+        uperf_benchmark_host_passive: bar.example.com
+        uperf_benchmark_profile: /usr/share/uperf/iperf.xml
+        uperf_benchmark_param:
+          proto: tcp
+          nthr: 1

@@ -25,7 +25,7 @@ Check `uperf_benchmark.yaml` for example on how to use the role in the playbook.
 * `uperf_benchmark_store_local_logs_dir` - if set, download raw logs from uperf to that local Ansible controller host directory. If empty, do not download the logs
 * `uperf_benchmark_host_active` and `uperf_benchmark_host_passive` - two nodes (running `uperf -m` and `uperf -s`) used to run the tests, currently only 1 and 1 hosts are allowed there
 * `uperf_benchmark_profile` - uperf profile
-* `uperf_benchmark_param_*` - uperf profile parameters, currently only `proto`, `nthr` and `iter` are supported
+* `uperf_benchmark_param` - dict with uperf profile parameters
 
 ### Default variables
 
@@ -39,9 +39,12 @@ uperf_benchmark_host_passive: passive.example.com
 
 # Profile
 uperf_benchmark_profile: /usr/share/uperf/iperf.xml
-uperf_benchmark_param_proto: tcp
-uperf_benchmark_param_nthr: 1
-uperf_benchmark_param_iter: N/A
+
+# Profile params
+uperf_benchmark_param:
+  proto: tcp
+  nthr: 1
+  iter: N/A
 ```
 
 

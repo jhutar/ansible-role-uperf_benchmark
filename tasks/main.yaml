@@ -14,9 +14,9 @@
 - name: "Start active uperf"
   ansible.builtin.shell: |
     export h={{ uperf_benchmark_host_passive }}
-    export proto={{ uperf_benchmark_param_proto|default('N/A') }}
-    export nthr={{ uperf_benchmark_param_nthr|default('N/A') }}
-    export iter={{ uperf_benchmark_param_iter|default('N/A') }}
+    {% for p in uperf_benchmark_param %}
+    export {{ p }}={{ uperf_benchmark_param[p] }}
+    {% endfor %}
     uperf -m "{{ uperf_benchmark_profile }}"
   when: "inventory_hostname == uperf_benchmark_host_active"
   register: uperf_m_cmd
@@ -28,7 +28,7 @@
 
 - name: "Create a config string"
   ansible.builtin.set_fact:
-    config_string: "profile={{ uperf_benchmark_profile }}; proto={{ uperf_benchmark_param_proto }}; nthr={{ uperf_benchmark_param_nthr }}; active={{ uperf_benchmark_host_active }}; passive={{ uperf_benchmark_host_passive }}"
+    config_string: "profile={{ uperf_benchmark_profile }}; {% for p in uperf_benchmark_param %}{{ p }}={{ uperf_benchmark_param[p] }}; {% endfor %}"
   when: "inventory_hostname == uperf_benchmark_host_active"
 
 - name: "Show config"

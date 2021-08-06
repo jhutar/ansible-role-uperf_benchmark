@@ -25,6 +25,9 @@ galaxy_info:
   #   - 99.99
 
   galaxy_tags:
-    - sosreport
+    - uperf
+    - network
+    - performance
+    - measurement
 
 dependencies: []

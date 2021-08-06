@@ -1,0 +1,16 @@
+---
+- name: "Enable EPEL"
+  ansible.builtin.package:
+    name: https://dl.fedoraproject.org/pub/epel/epel-release-latest-8.noarch.rpm
+    state: installed
+
+- name: "Install uperf"
+  ansible.builtin.package:
+    name: uperf
+    state: installed
+
+- name: "Disable EPEL"
+  ansible.builtin.package:
+    name: epel-release
+    state: absent
+...

@@ -1,41 +1,57 @@
 ---
-- name: "Check we only have 1 active and 1 passive host"
-  ansible.builtin.assert:
-    that:
-      - "groups['active']|length == 1"
-      - "groups['passive']|length == 1"
-
-- name: "Enable EPEL"
-  ansible.builtin.package:
-    name: https://dl.fedoraproject.org/pub/epel/epel-release-latest-8.noarch.rpm
-    state: installed
-
-- name: "Install uperf"
-  ansible.builtin.package:
-    name: uperf
-    state: installed
-
-- name: "Disable EPEL"
-  ansible.builtin.package:
-    name: epel-release
-    state: absent
+- name: "Kill uperf if some was left runinng"
+  ansible.builtin.command: killall uperf
+  register: killall_uperf_cmd
+  failed_when: "killall_uperf_cmd.rc != 0 and 'uperf: no process found' not in killall_uperf_cmd.stderr"
+  changed_when: "killall_uperf_cmd.rc == 0"
 
 - name: "Start passive uperf"
-  shell: |
-    uperf -s &
+  ansible.builtin.shell: |
+    nohup uperf -s &
     echo $! >/root/uperf_passive.pid
-  when: "'passive' in group_names"
+  when: "inventory_hostname == uperf_benchmark_host_passive"
 
 - name: "Start active uperf"
-  shell: |
-    export proto=tcp
-    export h={{ groups['active']|first }}
-    export nthr=4
-    uperf -m /usr/share/uperf/iperf.xml
-  when: "'active' in group_names"
+  ansible.builtin.shell: |
+    export h={{ uperf_benchmark_host_passive }}
+    export proto={{ uperf_benchmark_param_proto|default('N/A') }}
+    export nthr={{ uperf_benchmark_param_nthr|default('N/A') }}
+    export iter={{ uperf_benchmark_param_iter|default('N/A') }}
+    uperf -m "{{ uperf_benchmark_profile }}"
+  when: "inventory_hostname == uperf_benchmark_host_active"
+  register: uperf_m_cmd
 
 - name: "Stop passive uperf"
-  shell: |
+  ansible.builtin.shell: |
     kill $( cat /root/uperf_passive.pid )
-  when: "'passive' in group_names"
+  when: "inventory_hostname == uperf_benchmark_host_passive"
+
+- name: "Create a config string"
+  ansible.builtin.set_fact:
+    config_string: "profile={{ uperf_benchmark_profile }}; proto={{ uperf_benchmark_param_proto }}; nthr={{ uperf_benchmark_param_nthr }}; active={{ uperf_benchmark_host_active }}; passive={{ uperf_benchmark_host_passive }}"
+  when: "inventory_hostname == uperf_benchmark_host_active"
+
+- name: "Show config"
+  ansible.builtin.debug:
+    var: config_string
+  when: "inventory_hostname == uperf_benchmark_host_active"
+
+- name: "Show results"
+  ansible.builtin.debug:
+    var: uperf_m_cmd.stdout_lines
+  when: "inventory_hostname == uperf_benchmark_host_active"
+
+- name: "Ensure local output dir exists"
+  ansible.builtin.file:
+    path: "{{ uperf_benchmark_store_local_logs_dir }}"
+    state: directory
+  when: "uperf_benchmark_store_local_logs_dir|length != 0 and inventory_hostname == uperf_benchmark_host_active"
+  delegate_to: localhost
+
+- name: "Store output locally"
+  ansible.builtin.copy:
+    content: "Config: {{ config_string }}\n\n{{ uperf_m_cmd.stdout }}"
+    dest: "{{ uperf_benchmark_store_local_logs_dir }}/{{ config_string|regex_replace('[^a-zA-Z0-9]+', '_')}}.log"
+  when: "uperf_benchmark_store_local_logs_dir|length != 0 and inventory_hostname == uperf_benchmark_host_active"
+  delegate_to: localhost
 ...

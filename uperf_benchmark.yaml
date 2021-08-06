@@ -1,5 +1,5 @@
 - name: "Install and run uperf benchmark"
-  hosts: active,passive
+  hosts: all
   remote_user: root
   gather_facts: off
   tasks:
@@ -7,4 +7,5 @@
       include_role:
         name: uperf_benchmark
       vars:
-        uperf_benchmark_XYZ: ABC
+        uperf_benchmark_host_active: foo.exampl.com
+        uperf_benchmark_host_passive: bar.exampl.com

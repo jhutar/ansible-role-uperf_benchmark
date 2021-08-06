@@ -1,0 +1,14 @@
+---
+- name: "Collect facts about services"
+  service_facts:
+  register: services_state
+
+- name: "Stop firewall services"
+  ansible.builtin.service:
+    name: "{{ item }}"
+    state: stopped
+  when: "item in services_state.ansible_facts.services"
+  loop:
+    - firewalld.service
+    - iptables.service
+...

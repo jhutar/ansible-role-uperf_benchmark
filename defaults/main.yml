@@ -6,6 +6,10 @@ uperf_benchmark_store_local_logs_dir: ''
 uperf_benchmark_host_active: foo.example.com
 uperf_benchmark_host_passive: passive.example.com
 
+# Configure IPs on these hosts in /etc/hosts
+uperf_benchmark_host_active_nic: eth0
+uperf_benchmark_host_passive_nic: eth0
+
 # Profile
 uperf_benchmark_profile: /usr/share/uperf/iperf.xml
 

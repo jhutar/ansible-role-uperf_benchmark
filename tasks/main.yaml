@@ -5,6 +5,35 @@
   failed_when: "killall_uperf_cmd.rc != 0 and 'uperf: no process found' not in killall_uperf_cmd.stderr"
   changed_when: "killall_uperf_cmd.rc == 0"
 
+- name: "Detect IPs we need"
+  setup:
+    gather_subset: network
+  when: "inventory_hostname in (uperf_benchmark_host_active, uperf_benchmark_host_passive)"
+- debug:
+    var: "hostvars['{{uperf_benchmark_host_active}}']"
+
+- name: "Show IPs we are going to use"
+  debug:
+    var: hostvars[item.host]['ansible_facts'][item.nic]['ipv4']['address']
+  loop:
+    - host: "{{ uperf_benchmark_host_active }}"
+      nic: "{{ uperf_benchmark_host_active_nic }}"
+    - host: "{{ uperf_benchmark_host_passive }}"
+      nic: "{{ uperf_benchmark_host_passive_nic }}"
+  run_once: yes
+
+- name: "Configure IPs in /etc/hosts"
+  lineinfile:
+    path: /etc/hosts
+    regexp: ".* {{ item.host | regex_escape() }}$"
+    line: "{{ hostvars[item.host]['ansible_facts'][item.nic]['ipv4']['address'] }} {{ item.host }}"
+  loop:
+    - host: "{{ uperf_benchmark_host_active }}"
+      nic: "{{ uperf_benchmark_host_active_nic }}"
+    - host: "{{ uperf_benchmark_host_passive }}"
+      nic: "{{ uperf_benchmark_host_passive_nic }}"
+  when: "inventory_hostname in (uperf_benchmark_host_active, uperf_benchmark_host_passive)"
+
 - name: "Start passive uperf"
   ansible.builtin.shell: |
     nohup uperf -s &

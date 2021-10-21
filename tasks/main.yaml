@@ -9,8 +9,6 @@
   setup:
     gather_subset: network
   when: "inventory_hostname in (uperf_benchmark_host_active, uperf_benchmark_host_passive)"
-- debug:
-    var: "hostvars['{{uperf_benchmark_host_active}}']"
 
 - name: "Show IPs we are going to use"
   debug:
